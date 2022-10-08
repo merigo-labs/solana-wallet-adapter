@@ -3,9 +3,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:solana_wallet_adapter/models/call_method.dart';
-import 'package:solana_wallet_adapter/solana_wallet_adapter.dart';
-import 'solana_wallet_adapter_platform_interface.dart';
+import 'models/call_method.dart';
+import '../solana_wallet_adapter.dart';
 
 
 /// Method Channel Solana Wallet Adapter
@@ -18,7 +17,7 @@ class MethodChannelSolanaWalletAdapter extends SolanaWalletAdapterPlatform {
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
-  final methodChannel = const MethodChannel(SolanaWalletAdapter.packageName);
+  final methodChannel = const MethodChannel('com.merigo/${SolanaWalletAdapter.packageName}');
 
   /// Invokes [method] with [arguments] and returns it's [bool] result or `false` if it return null.
   Future<bool> invokeMethod(final String method, [final Map<String, dynamic>? arguments]) async

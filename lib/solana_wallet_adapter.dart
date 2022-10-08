@@ -8,17 +8,17 @@ import 'package:solana_common/exceptions/json_rpc_exception.dart';
 import 'package:solana_common/utils/library.dart';
 import 'package:solana_web3/solana_web3.dart';
 import 'package:synchronized/synchronized.dart';
-import 'association/association.dart';
-import 'exceptions/solana_wallet_adapter_exception.dart';
-import 'exceptions/solana_wallet_adapter_protocol_exception.dart';
-import 'models/index.dart';
-import 'protocol/wallet_adapter_connection.dart';
-import 'scenarios/local_association_scenario.dart';
-import 'scenarios/remote_association_scenario.dart';
-import 'scenarios/scenario.dart';
-import 'storage/wallet_adapter_state.dart';
-import 'storage/wallet_adapter_storage.dart';
-import 'utils/types.dart';
+import 'src/association/association.dart';
+import 'src/exceptions/solana_wallet_adapter_exception.dart';
+import 'src/exceptions/solana_wallet_adapter_protocol_exception.dart';
+import 'src/models/index.dart';
+import 'src/protocol/wallet_adapter_connection.dart';
+import 'src/scenarios/local_association_scenario.dart';
+import 'src/scenarios/remote_association_scenario.dart';
+import 'src/scenarios/scenario.dart';
+import 'src/storage/wallet_adapter_state.dart';
+import 'src/storage/wallet_adapter_storage.dart';
+import 'src/utils/types.dart';
 
 
 /// Exports
@@ -27,10 +27,14 @@ import 'utils/types.dart';
 export 'package:solana_common/config/cluster.dart';
 export 'package:solana_common/exceptions/json_rpc_exception.dart';
 export 'package:solana_common/utils/types.dart';
-export 'association/association.dart' show AssociationType;
-export 'exceptions/solana_wallet_adapter_exception.dart';
-export 'exceptions/solana_wallet_adapter_protocol_exception.dart';
-export 'models/index.dart';
+export 'src/association/association.dart' show AssociationType;
+export 'src/exceptions/solana_wallet_adapter_exception.dart';
+export 'src/exceptions/solana_wallet_adapter_protocol_exception.dart';
+export 'src/models/index.dart';
+export 'src/protocol/wallet_adapter_connection.dart';
+export 'src/solana_wallet_adapter_platform_interface.dart';
+export 'src/storage/wallet_adapter_state.dart';
+export 'src/utils/types.dart';
 
 
 /// Solana Wallet Adapter
@@ -214,9 +218,9 @@ class SolanaWalletAdapter {
     if (result != null) {
       try {
         return await reauthorizeHandler(connection, result.authToken);
-      } on JsonRpcException catch(error) {
+      } on JsonRpcException catch(error, stackTrace) {
         if (error.code != SolanaWalletAdapterProtocolExceptionCode.authorizationFailed) {
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       }
     }

@@ -4,8 +4,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:solana_wallet_adapter/models/account.dart';
 import 'wallet_adapter_state.dart';
+import '../models/account.dart';
 import '../models/authorize_result.dart';
 import '../utils/types.dart';
 

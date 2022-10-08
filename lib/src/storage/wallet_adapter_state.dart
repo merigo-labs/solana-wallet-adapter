@@ -3,8 +3,8 @@
 
 import 'dart:convert' show jsonDecode, jsonEncode;
 import 'package:solana_common/models/serializable.dart';
-import 'package:solana_wallet_adapter/models/account.dart';
-import 'package:solana_wallet_adapter/models/authorize_result.dart';
+import '../models/account.dart';
+import '../models/authorize_result.dart';
 
 
 /// Wallet Adapter State

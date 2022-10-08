@@ -56,7 +56,7 @@ class SolanaWalletAdapterPlugin:
   /// Constants
   companion object {
     private val TAG = javaClass.simpleName
-    private const val METHOD_CHANNEL_NAME = "solana_wallet_adapter"
+    private const val METHOD_CHANNEL_NAME = "com.merigo/solana_wallet_adapter"
     private const val WALLET_ACTIVITY_REQUEST_CODE = 1234
   }
 

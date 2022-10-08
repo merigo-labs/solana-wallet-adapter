@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:solana_wallet_adapter/solana_wallet_adapter_method_channel.dart';
+import 'package:solana_wallet_adapter/src/solana_wallet_adapter_method_channel.dart';
 
 void main() {
   MethodChannelSolanaWalletAdapter platform = MethodChannelSolanaWalletAdapter();
