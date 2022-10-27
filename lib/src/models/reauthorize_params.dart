@@ -2,7 +2,7 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:solana_common/models/serializable.dart';
-import '../models/identity.dart';
+import 'app_identity.dart';
 import '../utils/types.dart';
 
 
@@ -18,7 +18,7 @@ class ReauthorizeParams extends Serializable {
   });
 
   /// The dApp's identity information.
-  final Identity identity;
+  final AppIdentity identity;
 
   /// An opaque string previously returned by a call to `authorize`, `reauthorize`, or 
   /// `cloneAuthorization`.

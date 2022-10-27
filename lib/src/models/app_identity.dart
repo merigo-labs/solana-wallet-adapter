@@ -4,10 +4,10 @@
 import 'package:solana_common/models/serializable.dart';
 
 
-/// Identity
+/// App Identity
 /// ------------------------------------------------------------------------------------------------
 
-class Identity extends Serializable {
+class AppIdentity extends Serializable {
 
   /// The dApp's identity information. 
   /// 
@@ -19,13 +19,13 @@ class Identity extends Serializable {
   /// associate apps with a web domain.
   /// 
   /// ```
-  /// final identity = Identity(
+  /// final identity = AppIdentity(
   ///   uri: Uri.parse('https://myDApp.com'), 
   ///   icon: Uri.parse('favicon.ico'), 
   ///   name: 'My DApp', 
   /// );
   /// ```
-  const Identity({
+  const AppIdentity({
     this.uri,
     this.icon,
     this.name,

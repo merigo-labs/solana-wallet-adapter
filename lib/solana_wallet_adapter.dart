@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:solana_common/config/cluster.dart';
 import 'package:solana_common/exceptions/json_rpc_exception.dart';
 import 'package:solana_common/utils/library.dart';
-import 'package:solana_web3/solana_web3.dart';
 import 'package:synchronized/synchronized.dart';
 import 'src/association/association.dart';
 import 'src/exceptions/solana_wallet_adapter_exception.dart';
@@ -63,7 +62,7 @@ class SolanaWalletAdapter {
   static final _storage = WalletAdapterStorage();
 
   /// The dApp's identity information used by the wallet to verify the dApp making the requests.
-  final Identity identity;
+  final AppIdentity identity;
 
   /// The Solana cluster the dApp endpoint intends to interact with (default: [Cluster.mainnet]).
   final Cluster? cluster;

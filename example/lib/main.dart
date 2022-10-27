@@ -38,7 +38,7 @@ class SolanaWalletAdapterApp extends StatefulWidget {
 class _SolanaWalletAdapterAppState extends State<SolanaWalletAdapterApp> {
   
   final SolanaWalletAdapter adapter = SolanaWalletAdapter(
-    Identity(
+    AppIdentity(
       uri: Uri.parse('https://solana.com'),
       icon: Uri.parse('favicon.ico'),
       name: 'My DApp',

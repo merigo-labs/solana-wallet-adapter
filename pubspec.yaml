@@ -1,6 +1,6 @@
 name: solana_wallet_adapter
 description: The Solana Dart API for the Mobile Wallet Adapter Specification.
-version: 0.0.1
+version: 0.0.1+1
 repository: https://github.com/merigo-labs/solana-wallet-adapter
 issue_tracker: https://github.com/merigo-labs/solana-wallet-adapter/issues/new/choose
 
@@ -12,14 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  qr_flutter: ^4.0.0
   shared_preferences: ^2.0.15
+  solana_common: ^0.0.1+2
   synchronized: ^3.0.0+2
   webcrypto: ^0.5.3
-  solana_web3: 
-    path: ../solana_web3
-  solana_common:
-    path: ../solana_common
 
 dev_dependencies:
   flutter_test:
