@@ -246,12 +246,14 @@ class SolanaWalletAdapter {
   /// The operation is performed over a secure [connection].
   Future<SignTransactionsResult> signTransactionsHandler(
     final WalletAdapterConnection connection, {
-    required final List<Base64EncodedTransaction> transactions,
+    required final Iterable<Base64EncodedTransaction> transactions,
     final AssociationType? type,
   }) async {
     return connection.signTransactions(
       SignTransactionsParams(
-        payloads: transactions,
+        payloads: transactions.toList(
+          growable: false,
+        ),
       ),
     );
   }

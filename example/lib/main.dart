@@ -1,8 +1,8 @@
 /// Imports
 /// ------------------------------------------------------------------------------------------------
 
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:solana_common/models/serializable.dart';
 import 'package:solana_wallet_adapter/solana_wallet_adapter.dart';
 
@@ -39,16 +39,12 @@ class _SolanaWalletAdapterAppState extends State<SolanaWalletAdapterApp> {
   
   final SolanaWalletAdapter adapter = SolanaWalletAdapter(
     AppIdentity(
-      uri: Uri.parse('https://solana.com'),
-      icon: Uri.parse('favicon.ico'),
-      name: 'My DApp',
+      uri: Uri.parse('https://solana.com'), // Your application's web url.
+      icon: Uri.parse('favicon.ico'),       // The relative path to your favicon icon from [uri].
+      name: 'My DApp',                      // Your application name.
     ),
+    cluster: Cluster.devnet,                // Defaults to mainnet if `null`.
   );
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _run<T extends Serializable>(Future<T> Function() method) async {
     final messenger = ScaffoldMessenger.of(context);

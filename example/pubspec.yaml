@@ -18,6 +18,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  solana_web3: #^0.0.2+3
+    path: ../../solana_web3
   solana_wallet_adapter:
     # When depending on this package from a real application you should use:
     #   solana_wallet_adapter: ^x.y.z

@@ -186,17 +186,17 @@ class WalletAdapterSession {
     final BufferReader reader = BufferReader.fromList(message);
 
     // Get the message sequence number, a 4-byte big-endian unsigned integer.
-    final Buffer sequenceNumberBuffer = reader.get(sequenceNumberByteLength);
+    final Buffer sequenceNumberBuffer = reader.getBuffer(sequenceNumberByteLength);
     final int sequenceNumber = sequenceNumberBuffer.getUint32(0, Endian.big);
     checkGt(sequenceNumber, _walletSequenceNumber, 'wallet sequence number');
     _walletSequenceNumber = sequenceNumber;
 
     // Get the initialisation vector, a randomly generated list of 12 8-bit unsigned integers 
     // (which should be created for each encrypted message).
-    final Buffer initialisationVector = reader.get(aesIvByteLength);
+    final Buffer initialisationVector = reader.getBuffer(aesIvByteLength);
 
     // Get the AES-128-GCM message ciphertext (i.e. the remaining contents).
-    final Buffer ciphertext = reader.get();
+    final Buffer ciphertext = reader.getBuffer();
 
     // Decrypt the ciphertext using the [sharedSecretKey].
     final Uint8List plainText = await sharedSecretKey.decryptBytes(
