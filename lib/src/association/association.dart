@@ -3,7 +3,6 @@
 
 import 'dart:math' as math show Random;
 import 'package:flutter/foundation.dart' show protected;
-import 'package:solana_common/utils/library.dart';
 import '../crypto/association_token.dart';
 import '../exceptions/solana_wallet_adapter_exception.dart';
 
@@ -62,9 +61,8 @@ abstract class Association {
   /// final int value = Association.randomValue(minValue: 10, maxValue: 20);
   /// print(value); // 10 ≤ value ≤ 20
   /// ```
-  static int randomValue({ final int minValue = 0, final int maxValue = maxInt64 - 1}) {
+  static int randomValue({ final int minValue = 0, required final int maxValue}) {
     assert(minValue >= 0);
-    assert(maxValue < maxInt64);
     assert(minValue <= maxValue);
     final int rangeLength = maxValue - minValue + 1;
     return minValue + math.Random().nextInt(rangeLength);
