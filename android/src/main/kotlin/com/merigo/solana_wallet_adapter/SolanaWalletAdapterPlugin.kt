@@ -12,6 +12,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat.startActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -21,7 +22,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.actor
 import kotlin.coroutines.CoroutineContext
 
 
@@ -62,9 +62,11 @@ class SolanaWalletAdapterPlugin:
 
   /// Incoming (Flutter -> Android) method channel method names.
   enum class IncomingMethod(val value: String) {
+    OPEN_URI("openUri"),
     OPEN_STORE("openStore"),
     OPEN_WALLET("openWallet"),
     CLOSE_WALLET("closeWallet"),
+    IS_WALLET_INSTALLED("isWalletInstalled"),
   }
 
   /// Outgoing (Android -> Flutter) method channel method names.
@@ -83,15 +85,26 @@ class SolanaWalletAdapterPlugin:
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when(call.method) {
+      IncomingMethod.OPEN_URI.value
+      -> viewModelScope.launch { openUri(call, result) }
       IncomingMethod.OPEN_STORE.value
       -> viewModelScope.launch { openStore(call, result) }
       IncomingMethod.OPEN_WALLET.value
       -> viewModelScope.launch { openWallet(call, result) }
       IncomingMethod.CLOSE_WALLET.value
       -> viewModelScope.launch { closeWallet(call, result) }
+      IncomingMethod.IS_WALLET_INSTALLED.value
+      -> viewModelScope.launch { isWalletInstalled(call, result) }
       else
       -> result.notImplemented()
     }
+  }
+
+  private fun openUri(
+    @NonNull call: MethodCall,
+    @NonNull result: Result,
+  ) {
+    result.success(startUriIntent(call.argument<String>("uri")))
   }
 
   private fun openStore(
@@ -99,13 +112,7 @@ class SolanaWalletAdapterPlugin:
     @NonNull result: Result,
   ) {
     val id = call.argument<String>("id")
-    startPlayStoreIntent("https://play.google.com/store/apps/details?id=$id")
-//    try {
-//      startPlayStoreIntent("market://details?id=$id")
-//    } catch (e: ActivityNotFoundException) {
-//      startPlayStoreIntent("https://play.google.com/store/apps/details?id=$id")
-//    }
-    result.success(true)
+    result.success(startUriIntent("https://play.google.com/store/apps/details?id=$id"))
   }
 
   private suspend fun openWallet(
@@ -146,16 +153,41 @@ class SolanaWalletAdapterPlugin:
     result.success(closed)
   }
 
-  private fun startPlayStoreIntent(
-    uriString: String,
+  private fun isWalletInstalled(
+    @NonNull call: MethodCall,
+    @NonNull result: Result,
   ) {
-    activity?.let {
-      it.startActivity(
-        Intent(
-          Intent.ACTION_VIEW,
-          Uri.parse(uriString)
-        )
-      )
+    var isInstalled = try {
+      val id = call.argument<String>("id")
+      require(id != null) {
+        "App store id is null."
+      }
+      val packageManager = activity?.packageManager;
+      require(packageManager != null) {
+        "Package manager is null."
+      }
+      packageManager.getPackageInfo(id, 0)
+      true
+    } catch (e: Throwable) {
+      false
+    }
+    result.success(isInstalled)
+  }
+
+  private fun startUriIntent(
+    uriString: String?,
+  ): Boolean {
+    val uri = Uri.parse(uriString)
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+    val activity = activity
+    var packageManager = activity?.packageManager
+    return if (activity != null
+      && packageManager != null
+      && intent.resolveActivity(packageManager) != null) {
+      activity.startActivity(intent)
+      true
+    } else {
+      false
     }
   }
 

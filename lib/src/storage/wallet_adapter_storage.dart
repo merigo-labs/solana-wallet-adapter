@@ -50,22 +50,22 @@ class WalletAdapterStorage {
   /// The current state.
   WalletAdapterState? get state => _notifier.value;
 
-  /// Sets [authorizeResult] and [feePayerAccount] as the new state.
+  /// Sets [authorizeResult] and [connectedAccount] as the new state.
   Future<bool> _setState({
     required final AuthorizeResult? authorizeResult,
-    required final Account? feePayerAccount,
+    required final Account? connectedAccount,
   }) async {
-    Account? feePayer;
+    Account? connected;
     if (authorizeResult != null) {
       if (authorizeResult.accounts.length == 1) {
-        feePayer = authorizeResult.accounts.first;
-      } else if (authorizeResult.accounts.contains(feePayerAccount)) {
-        feePayer = feePayerAccount;
+        connected = authorizeResult.accounts.first;
+      } else if (authorizeResult.accounts.contains(connectedAccount)) {
+        connected = connectedAccount;
       }
     }
     final WalletAdapterState value = WalletAdapterState(
       authorizeResult: authorizeResult, 
-      feePayerAccount: feePayer,
+      connectedAccount: connected,
     );
     _notifier.value = value;
     final SharedPreferences prefs = await _storage;
@@ -78,8 +78,8 @@ class WalletAdapterStorage {
   /// Sets the [state]'s [WalletAdapterState.authorizeResult].
   Future<bool> setAuthorizeResult(final AuthorizeResult? authorizeResult) async {
     return _setState(
-        authorizeResult: authorizeResult,
-        feePayerAccount: state?.feePayerAccount,
+      authorizeResult: authorizeResult,
+      connectedAccount: state?.connectedAccount,
     );
   }
 
@@ -89,20 +89,21 @@ class WalletAdapterStorage {
     return token == authToken ? setAuthorizeResult(null) : Future.value(true);
   }
 
-  /// The [state]'s [WalletAdapterState.feePayerAccount].
+  /// The [state]'s [WalletAdapterState.connectedAccount].
   /// 
   /// Returns `null` if the set account has not been authorized by the wallet endpoint (i.e. the 
-  /// account does not exist within the [state]'s [WalletAdapterState.authorizeResult] accounts).
-  Account? get feePayerAccount => state?.feePayerAccount;
+  /// account does not exist within the [state]'s [WalletAdapterState.authorizeResult] accounts 
+  /// list).
+  Account? get connectedAccount => state?.connectedAccount;
 
-  /// Sets the [state]'s [WalletAdapterState.feePayerAccount].
-  Future<bool> setFeePayerAccount(final Account? feePayerAccount) async {
+  /// Sets the [state]'s [WalletAdapterState.connectedAccount].
+  Future<bool> setConnectedAccount(final Account? connectedAccount) async {
     return _setState(
       authorizeResult: state?.authorizeResult,
-      feePayerAccount: feePayerAccount,
+      connectedAccount: connectedAccount,
     );
   }
 
-  /// Clears the [state]'s [WalletAdapterState.feePayerAccount].
-  Future<bool> clearFeePayerAccount() => setFeePayerAccount(null);
+  /// Clears the [state]'s [WalletAdapterState.connectedAccount].
+  Future<bool> clearConnectedAccount() => setConnectedAccount(null);
 }

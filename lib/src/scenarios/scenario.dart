@@ -4,33 +4,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:solana_common/exceptions/json_rpc_exception.dart';
 import 'package:solana_common/extensions/future.dart';
 import 'package:solana_common/models/serializable.dart';
 import 'package:solana_common/protocol/json_rpc_request.dart';
 import 'package:solana_common/protocol/json_rpc_request_config.dart';
 import 'package:solana_common/protocol/json_rpc_response.dart';
 import 'package:solana_common/utils/library.dart';
-import 'package:solana_common/utils/types.dart';
 import 'package:solana_common/web_socket/solana_web_socket_connection.dart';
 import 'package:solana_common/web_socket/web_socket_exchange_manager.dart';
 import '../association/association.dart';
 import '../crypto/association_token.dart';
-import '../exceptions/solana_wallet_adapter_exception.dart';
-import '../models/authorize_result.dart';
-import '../models/deauthorize_result.dart';
 import '../models/call_method.dart';
-import '../models/clone_authorization_result.dart';
-import '../models/get_capabilities_result.dart';
 import '../models/hello_result.dart';
 import '../models/method.dart';
-import '../models/reauthorize_result.dart';
-import '../models/sign_and_send_transactions_result.dart';
-import '../models/sign_messages_result.dart';
-import '../models/sign_transactions_result.dart';
-import '../protocol/wallet_adapter_connection.dart';
 import '../protocol/wallet_adapter_session.dart';
-import '../solana_wallet_adapter_platform_interface.dart';
+import '../../solana_wallet_adapter.dart';
 
 
 /// Scenario
@@ -122,7 +110,6 @@ abstract class Scenario extends SolanaWebSocketConnection with WalletAdapterConn
       final Uint8List message = Uint8List.fromList(data);
       return message.isEmpty ? onAppPing() : _receive(message);
     } catch (error, stackTrace) {
-      print('[SCENARIO] ON DATA ERROR $error');
       dispose(error, stackTrace);
     }
   }
@@ -204,9 +191,9 @@ abstract class Scenario extends SolanaWebSocketConnection with WalletAdapterConn
   /// 
   /// `This method should be called within a synchronized block and can only be called once.`
   Future<T> run<T>(
-    final Future<T> Function(WalletAdapterConnection) callback, {
-    final Uri? walletUriBase,
+    final AssociationCallback<T> callback, {
     final Duration? timeout,
+    final Uri? walletUriBase,
   }) async {
     /// Reset the method channel's callback handler.
     SolanaWalletAdapterPlatform.instance.setMethodCallHandler(null);
@@ -218,13 +205,16 @@ abstract class Scenario extends SolanaWebSocketConnection with WalletAdapterConn
     final AssociationToken associationToken = await session.associationToken;
 
     /// Create the wallet uri.
-    final Uri wallerUri = association.walletUri(associationToken, uriPrefix: walletUriBase);
+    final Uri walletUri = association.walletUri(
+      associationToken, 
+      uriPrefix: walletUriBase,
+    );
 
     // Add handler to process method calls by the native code (e.g. Android or iOS).
-    SolanaWalletAdapterPlatform.instance.setMethodCallHandler(_methodCallHandler(wallerUri));
+    SolanaWalletAdapterPlatform.instance.setMethodCallHandler(_methodCallHandler(walletUri));
 
     // Launch the UI for the current scenario.
-    if (!await openUI(wallerUri)) {
+    if (!await openUI(walletUri)) {
       throw const SolanaWalletAdapterException(
         'The mobile wallet adapter could not be opened.', 
         code: SolanaWalletAdapterExceptionCode.walletNotFound,
@@ -232,7 +222,7 @@ abstract class Scenario extends SolanaWebSocketConnection with WalletAdapterConn
     }
 
     // Connect to the wallet endpoint.
-    final Duration timeLimit = timeout ?? const Duration(seconds: 30);
+    final Duration timeLimit = timeout ?? association.type.timeout;
     await socket.connect(association.sessionUri()).timeout(timeLimit);
 
     // Create a new ECDH keypair.
@@ -251,10 +241,10 @@ abstract class Scenario extends SolanaWebSocketConnection with WalletAdapterConn
   /// Created a method call handler to [dispose] of the current session on receipt of a 
   /// [CallMethod.walletClosed] method call.
   Future<void> Function(MethodCall call) _methodCallHandler(
-    final Uri wallerUri,
+    final Uri walletUri,
   ) => (final MethodCall call) async {
       final String? uri = Map.from(call.arguments ?? {})['uri'];
-      if (call.method == CallMethod.walletClosed.name && uri == wallerUri.toString()) {
+      if (call.method == CallMethod.walletClosed.name && uri == walletUri.toString()) {
         dispose(const SolanaWalletAdapterException(
           'The wallet endpoint has been closed.', 
           code: SolanaWalletAdapterExceptionCode.sessionClosed,

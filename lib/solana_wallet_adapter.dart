@@ -36,6 +36,13 @@ export 'src/storage/wallet_adapter_state.dart';
 export 'src/utils/types.dart';
 
 
+/// Types
+/// --------------------------------------------------------------------------------------------
+
+/// The callback function triggered on a successful connection to the wallet endpoint.
+typedef AssociationCallback<T> = Future<T> Function(WalletAdapterConnection connection);
+
+
 /// Solana Wallet Adapter
 /// ------------------------------------------------------------------------------------------------
 
@@ -81,10 +88,10 @@ class SolanaWalletAdapter {
   /// {@endtemplate}
   AuthorizeResult? get authorizeResult => _storage.authorizeResult;
 
-  /// {@template solana_wallet_adapter.feePayerAccount}
-  /// The fee payer wallet account.
+  /// {@template solana_wallet_adapter.connectedAccount}
+  /// The connected account and default fee payer.
   /// {@endtemplate}
-  Account? get feePayerAccount => _storage.feePayerAccount;
+  Account? get connectedAccount => _storage.connectedAccount;
 
   /// {@template solana_wallet_adapter.isAuthorized}
   /// True if the dApp has been authorized.
@@ -94,14 +101,14 @@ class SolanaWalletAdapter {
   /// Reauthorize exception for an invalid auth token.
   SolanaWalletAdapterException get reauthorizeException 
     => const SolanaWalletAdapterException(
-      'reauthorize() invalid auth token, request a new token with the authorize method.',
+      'Invalid auth token, request a new token with the authorize method.',
       code: SolanaWalletAdapterExceptionCode.secureContextRequired,
     );
 
   /// Clone authorize exception for an invalid auth token.
   SolanaWalletAdapterException get cloneAuthorizationException 
     => const SolanaWalletAdapterException(
-      'cloneAuthorization() requires the current session to be in an authorized state.',
+      'The current session must be in an authorized state.',
       code: SolanaWalletAdapterExceptionCode.secureContextRequired,
     );
 
@@ -116,8 +123,8 @@ class SolanaWalletAdapter {
   /// Unregisters [listener] to stop being called when the authorization state changes.
   void removeListener(final VoidCallback listener) => _storage.notifier.removeListener(listener);
 
-  /// Set [account] to be the default fee payer.
-  Future<bool> setFeePayerAccount(final Account? account) => _storage.setFeePayerAccount(account);
+  /// Set [account] to be the connected payer.
+  Future<bool> setConnectedAccount(final Account? account) => _storage.setConnectedAccount(account);
 
   /// {@macro solana_wallet_adapter.authorize}
   /// 
@@ -148,7 +155,7 @@ class SolanaWalletAdapter {
   /// {@endtemplate}
   Future<AuthorizeResult> authorize({
     final AssociationType? type,
-  }) => association(type, authorizeHandler);
+  }) => association(type: type, authorizeHandler);
 
   /// {@macro solana_wallet_adapter.deauthorize}
   /// 
@@ -173,7 +180,7 @@ class SolanaWalletAdapter {
   }) async {
     final AuthorizeResult? result = authorizeResult;
     return result != null
-      ? association(type, (connection) => deauthorizeHandler(connection, result.authToken))
+      ? association(type: type, (connection) => deauthorizeHandler(connection, result.authToken))
       : Future.value(const DeauthorizeResult());   
   }
 
@@ -191,7 +198,7 @@ class SolanaWalletAdapter {
   }
 
   /// {@template solana_wallet_adapter.reauthorize}
-  /// Requests dApp reauthorization with the wallet endpoint to put the current session in an 
+  /// Requests dApp reauthorization with the wallet endpoint to put the current session into an 
   /// authorized state.
   /// {@endtemplate}
   Future<AuthorizeResult> reauthorize({
@@ -199,7 +206,7 @@ class SolanaWalletAdapter {
   }) async {
     final AuthToken? authToken = authorizeResult?.authToken;
     return authToken != null
-      ? association(type, (connection) => reauthorizeHandler(connection, authToken))
+      ? association(type: type, (connection) => reauthorizeHandler(connection, authToken))
       : Future.error(reauthorizeException);
   }
 
@@ -231,15 +238,41 @@ class SolanaWalletAdapter {
   /// {@endtemplate}
   Future<AuthorizeResult> reauthorizeOrAuthorize({
     final AssociationType? type,
-  }) => association(type, (connection) => reauthorizeOrAuthorizeHandler(connection));
+  }) => association(
+    type: type, 
+    (connection) => reauthorizeOrAuthorizeHandler(connection),
+  );
 
-  /// {@template solana_wallet_adapter.getCapabilities}
-  /// Gets the limits of a wallet endpoint’s implementation of the specification. It returns whether 
-  /// optional specification features are supported, as well as any implementation-specific limits.
-  /// {@endtemplate}
+  /// {@macro solana_wallet_adapter.getCapabilities}
+  /// 
+  /// The operation is performed over a secure [connection].
+  Future<GetCapabilitiesResult> getCapabilitiesHandler(
+    final WalletAdapterConnection connection,
+  ) => connection.getCapabilities();
+
+  /// {@macro solana_wallet_adapter.getCapabilities}
   Future<GetCapabilitiesResult> getCapabilities({
     final AssociationType? type,
-  }) => association(type, (connection) => connection.getCapabilities());
+  }) => association(type: type, getCapabilitiesHandler);
+
+  /// {@macro solana_wallet_adapter.reauthorize}
+  /// 
+  /// {@template solana_wallet_adapter.skipReauthorize}
+  /// If [skipReauthorize] is true the wallet must be in an authorized state for the privileged 
+  /// method call to succeed.
+  /// {@endtemplate}
+  Future<AuthorizeResult?> _reauthorizePrivilegedMethodHandler(
+    final WalletAdapterConnection connection, {
+    required final bool skipReauthorize,
+  }) async {
+    if (skipReauthorize) {
+      return Future.value(authorizeResult);
+    }
+    final AuthToken? authToken = authorizeResult?.authToken;
+    return authToken != null
+      ? reauthorizeHandler(connection, authToken)
+      : Future.error(reauthorizeException);
+  }
 
   /// {@macro solana_wallet_adapter.signTransactions}
   /// 
@@ -247,8 +280,12 @@ class SolanaWalletAdapter {
   Future<SignTransactionsResult> signTransactionsHandler(
     final WalletAdapterConnection connection, {
     required final Iterable<Base64EncodedTransaction> transactions,
-    final AssociationType? type,
+    final bool skipReauthorize = false,
   }) async {
+    await _reauthorizePrivilegedMethodHandler(
+      connection, 
+      skipReauthorize: skipReauthorize,
+    );
     return connection.signTransactions(
       SignTransactionsParams(
         payloads: transactions.toList(
@@ -259,18 +296,24 @@ class SolanaWalletAdapter {
   }
 
   /// {@template solana_wallet_adapter.signTransactions}
+  /// [Privileged Method]
+  /// 
   /// Invokes the wallet endpoint to simulate the [transactions] and present them to the user for 
   /// approval (if applicable). If approved (or if it does not require approval), the wallet 
   /// endpoint should sign the transactions with the private keys for the requested authorized 
   /// account addresses, and return the signed transactions to the dapp endpoint.
+  /// 
+  /// {@macro solana_wallet_adapter.skipReauthorize}
   /// {@endtemplate}
   Future<SignTransactionsResult> signTransactions({
     required final List<Base64EncodedTransaction> transactions,
+    final bool skipReauthorize = false,
     final AssociationType? type,
-  }) => association(type, (connection) => signTransactionsHandler(
-      connection, 
-      transactions: transactions,
-    ));
+  }) => association(type: type, (connection) => signTransactionsHandler(
+    connection, 
+    transactions: transactions,
+    skipReauthorize: skipReauthorize,
+  ));
 
   /// {@macro solana_wallet_adapter.signAndSendTransactions}
   /// 
@@ -279,7 +322,12 @@ class SolanaWalletAdapter {
     final WalletAdapterConnection connection, {
     required final List<Base64EncodedTransaction> transactions,
     final SignAndSendTransactionsConfig? config,
+    final bool skipReauthorize = false,
   }) async {
+    await _reauthorizePrivilegedMethodHandler(
+      connection, 
+      skipReauthorize: skipReauthorize,
+    );
     return connection.signAndSendTransactions(
       SignAndSendTransactionsParams(
         payloads: transactions,
@@ -289,6 +337,8 @@ class SolanaWalletAdapter {
   }
 
   /// {@template solana_wallet_adapter.signAndSendTransactions}
+  /// [Privileged Method]
+  /// 
   /// `Implementation of this method by a wallet endpoint is optional.`
   /// 
   /// Invokes the wallet endpoint to simulate the transactions provided by [transactions] and 
@@ -303,15 +353,19 @@ class SolanaWalletAdapter {
   /// the wallet endpoint to wait for its network RPC node to reach the same point in time as the 
   /// node used by the dApp endpoint, ensuring that, e.g., the recent blockhash encoded in the 
   /// transactions will be available.
+  /// 
+  /// {@macro solana_wallet_adapter.skipReauthorize}
   /// {@endtemplate}
   Future<SignAndSendTransactionsResult> signAndSendTransactions({
     required final List<Base64EncodedTransaction> transactions,
     final SignAndSendTransactionsConfig? config,
+    final bool skipReauthorize = false,
     final AssociationType? type,
-  }) => association(type, (connection) => signAndSendTransactionsHandler(
-      connection, 
-      transactions: transactions,
-    ));
+  }) => association(type: type, (connection) => signAndSendTransactionsHandler(
+    connection, 
+    transactions: transactions,
+    skipReauthorize: skipReauthorize,
+  ));
 
   /// {@macro solana_wallet_adapter.signMessages}
   /// 
@@ -320,7 +374,12 @@ class SolanaWalletAdapter {
     final WalletAdapterConnection connection, {
     required final List<Base64EncodedMessage> messages,
     required final List<Base64EncodedAddress> addresses,
+    final bool skipReauthorize = false,
   }) async {
+    await _reauthorizePrivilegedMethodHandler(
+      connection, 
+      skipReauthorize: skipReauthorize,
+    );
     return connection.signMessages(
       SignMessagesParams(
         addresses: addresses,
@@ -330,34 +389,46 @@ class SolanaWalletAdapter {
   }
 
   /// {@template solana_wallet_adapter.signMessages}
+  /// [Privileged Method]
+  /// 
   /// Invokes the wallet endpoint to present the provided messages to the user for approval. If 
   /// approved, the wallet endpoint should sign the messages with the private key for the authorized 
   /// account address, and return the signed messages to the dApp endpoint. 
   /// 
   /// The signatures should be appended to the message, in the same order as addresses.
+  /// 
+  /// {@macro solana_wallet_adapter.skipReauthorize}
   /// {@endtemplate}
   Future<SignMessagesResult> signMessages({
     required final List<Base64EncodedMessage> messages,
     required final List<Base64EncodedAddress> addresses,
+    final bool skipReauthorize = false,
     final AssociationType? type,
-  }) => association(type, (connection) => signMessagesHandler(
-      connection,
-      messages: messages, 
-      addresses: addresses,
-    ));
+  }) => association(type: type, (connection) => signMessagesHandler(
+    connection,
+    messages: messages, 
+    addresses: addresses,
+    skipReauthorize: skipReauthorize,
+  ));
 
   /// {@macro solana_wallet_adapter.cloneAuthorization}
   /// 
   /// The operation is performed over a secure [connection].
   Future<CloneAuthorizationResult> cloneAuthorizationHandler(
-    final WalletAdapterConnection connection,
-    final AuthToken authToken,
-  ) async {
-    await reauthorizeHandler(connection, authToken);
+    final WalletAdapterConnection connection, 
+    final AuthToken authToken, {
+    final bool skipReauthorize = false,
+  }) async {
+    await _reauthorizePrivilegedMethodHandler(
+      connection, 
+      skipReauthorize: skipReauthorize,
+    );
     return connection.cloneAuthorization();
   }
 
   /// {@template solana_wallet_adapter.cloneAuthorization}
+  /// [Privileged Method]
+  /// 
   /// `Implementation of this method by a wallet endpoint is optional.`
   /// 
   /// Attempts to clone the session’s currently active authorization in a form suitable for sharing 
@@ -365,50 +436,57 @@ class SolanaWalletAdapter {
   /// not the wallet endpoint supports cloning an auth_token is an implementation detail. If this 
   /// method succeeds, it will return an auth token appropriate for sharing with another instance of 
   /// the same dApp endpoint.
+  /// 
+  /// {@macro solana_wallet_adapter.skipReauthorize}
   /// {@endtemplate}
   Future<CloneAuthorizationResult> cloneAuthorization({
+    final bool skipReauthorize = false,
     final AssociationType? type,
   }) async {
     final AuthToken? authToken = authorizeResult?.authToken;
     return authToken != null
-      ? association(type, (connection) => cloneAuthorizationHandler(connection, authToken))
+      ? association(type: type, (connection) => cloneAuthorizationHandler(
+          connection, 
+          authToken, 
+          skipReauthorize: skipReauthorize,
+        ))
       : Future.error(cloneAuthorizationException);
-  }
-
-  /// Runs [callback] for the provided [scenario], then disposes of it. A [scenario] can only be 
-  /// used once.
-  Future<T> _useScenario<T>(
-    final Scenario scenario,
-    final Future<T> Function(WalletAdapterConnection connection) callback, 
-  ) async {
-    try {
-      final Uri? walletUriBase = authorizeResult?.walletUriBase;
-      return await _sessionLock.synchronized(
-        timeout: Duration.zero,
-        () => scenario.run<T>(
-          callback, 
-          walletUriBase: walletUriBase,
-        ),
-      );
-    } finally {
-      scenario.dispose();
-    }
   }
 
   /// Creates a new association with a wallet endpoint for the provided [type] and runs [callback] 
   /// inside an encrypted session.
+  /// 
+  /// if [type] is omitted a local association is attempted before attempting a remote association 
+  /// with [hostAuthority] if provided.
   Future<T> association<T>(
+    final AssociationCallback<T> callback, {
     final AssociationType? type,
-    final Future<T> Function(WalletAdapterConnection connection) callback, 
-  ) => type != AssociationType.remote
-      ? localAssociation(callback)
-      : remoteAssociation(hostAuthority, callback);
+    final Duration? timeout,
+  }) async {
+    switch (type) {
+      case AssociationType.local:
+        return localAssociation(callback, timeout: timeout);
+      case AssociationType.remote:
+        return remoteAssociation(hostAuthority, callback, timeout: timeout);
+      case null:
+        try {
+          return await localAssociation(callback, timeout: timeout);
+        } on SolanaWalletAdapterException catch(error, stackTrace) {
+          final String? hostAuthority = this.hostAuthority;
+          return hostAuthority != null 
+            && error.code == SolanaWalletAdapterExceptionCode.walletNotFound
+              ? remoteAssociation(hostAuthority, callback)
+              : Future.error(error, stackTrace);
+        }
+    }
+  }
 
   /// Creates a new association with a `local` wallet endpoint and runs [callback] inside an 
   /// encrypted session.
   Future<T> localAssociation<T>(
-    final Future<T> Function(WalletAdapterConnection connection) callback,
-  ) => _useScenario(LocalAssociationScenario(), callback);
+    final AssociationCallback<T> callback, {
+    final Duration? timeout,
+  }) => _useScenario(LocalAssociationScenario(), callback, timeout: timeout);
 
   /// Creates a new association with a `remote` wallet endpoint and runs [callback] inside an 
   /// encrypted session.
@@ -417,9 +495,32 @@ class SolanaWalletAdapter {
   /// the remote wallet endpoint. 
   Future<T> remoteAssociation<T>(
     final String? hostAuthority,
-    final Future<T> Function(WalletAdapterConnection connection) callback,
-  ) {
+    final AssociationCallback<T> callback, {
+    final Duration? timeout,
+  }) {
     check(hostAuthority != null, '[hostAuthority] cannot be null for [AssociationType.remote].');
-    return _useScenario(RemoteAssociationScenario(hostAuthority!), callback);
+    return _useScenario(RemoteAssociationScenario(hostAuthority!), callback, timeout: timeout);
+  }
+
+  /// Runs [callback] for the provided [scenario], then disposes of it. A [scenario] can only be 
+  /// used once.
+  Future<T> _useScenario<T>(
+    final Scenario scenario,
+    final AssociationCallback<T> callback, {
+    final Duration? timeout,
+  }) async {
+    try {
+      final Uri? walletUriBase = authorizeResult?.walletUriBase;
+      return await _sessionLock.synchronized(
+        timeout: Duration.zero,
+        () => scenario.run<T>(
+          callback, 
+          timeout: timeout,
+          walletUriBase: walletUriBase,
+        ),
+      );
+    } finally {
+      scenario.dispose();
+    }
   }
 }

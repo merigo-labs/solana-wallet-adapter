@@ -33,6 +33,9 @@ abstract class SolanaWalletAdapterPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// Opens [uri].
+  Future<bool> openUri(final String uri);
+
   /// Opens the app/play store for the application [id].
   Future<bool> openStore(final String id);
 
@@ -41,6 +44,9 @@ abstract class SolanaWalletAdapterPlatform extends PlatformInterface {
 
   /// Closes a mobile wallet app previously launched by [openWallet].
   Future<bool> closeWallet();
+
+  /// Check if a wallet application is installed on the current device.
+  Future<bool> isWalletInstalled(final String id);
   
   /// Sets a callback for receiving method calls on this channel.
   /// 

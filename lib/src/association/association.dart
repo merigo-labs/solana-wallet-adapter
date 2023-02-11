@@ -11,8 +11,15 @@ import '../exceptions/solana_wallet_adapter_exception.dart';
 /// ------------------------------------------------------------------------------------------------
 
 enum AssociationType {
-  local,
-  remote;
+  local(30),
+  remote(60),
+  ;
+
+  const AssociationType(this.timeLimit);
+  
+  final int timeLimit;
+
+  Duration get timeout => Duration(seconds: timeLimit);
 }
 
 

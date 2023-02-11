@@ -24,6 +24,12 @@ class MethodChannelSolanaWalletAdapter extends SolanaWalletAdapterPlatform {
     => await methodChannel.invokeMethod(method, arguments) ?? false;
 
   @override
+  Future<bool> openUri(final String uri) => invokeMethod(
+    CallMethod.openUri.name, { 
+    'uri': uri, 
+  });
+
+  @override
   Future<bool> openStore(final String id) => invokeMethod(
     CallMethod.openStore.name, { 
     'id': id, 
@@ -37,6 +43,12 @@ class MethodChannelSolanaWalletAdapter extends SolanaWalletAdapterPlatform {
 
   @override
   Future<bool> closeWallet() => invokeMethod(CallMethod.closeWallet.name);
+  
+  @override
+  Future<bool> isWalletInstalled(final String id) => invokeMethod(
+    CallMethod.isWalletInstalled.name, { 
+    'id': id, 
+  });
 
   @override
   void setMethodCallHandler(final Future Function(MethodCall)? handler)

@@ -1,7 +1,9 @@
 /// Imports
 /// ------------------------------------------------------------------------------------------------
 
+import 'dart:convert';
 import 'package:solana_common/models/serializable.dart';
+import 'package:solana_common/utils/convert.dart';
 import '../utils/types.dart';
 
 
@@ -28,6 +30,9 @@ class Account extends Serializable {
 
   /// A human-readable string that describes this account.
   final String? label;
+
+  /// The base-58 encoded address of this account.
+  String get addressBase58 => base58Encode(base64Decode(address));
 
   @override
   int get hashCode => address.hashCode;

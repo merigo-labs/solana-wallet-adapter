@@ -80,7 +80,7 @@ class AuthorizeResult extends Serializable {
   Map<String, dynamic> toJson() => {
     'accounts': list.encode(accounts),
     'auth_token': authToken,
-    'wallet_uri_base': walletUriBase,
+    'wallet_uri_base': walletUriBase?.toString(),
   };
 
   /// Serializes this class into a JSON string.

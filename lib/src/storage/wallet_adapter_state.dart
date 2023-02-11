@@ -15,14 +15,14 @@ class WalletAdapterState extends Serializable {
   /// The wallet adapter state.
   const WalletAdapterState({
     this.authorizeResult,
-    this.feePayerAccount,
+    this.connectedAccount,
   });
 
   /// The latest result of a successful `authorize` request.
   final AuthorizeResult? authorizeResult;
 
-  /// The account selected to be the default fee payer.
-  final Account? feePayerAccount;
+  /// The connected account and default fee payer.
+  final Account? connectedAccount;
   
   /// Creates an instance of `this` class from the constructor parameters defined in the [json] 
   /// object.
@@ -32,7 +32,7 @@ class WalletAdapterState extends Serializable {
   /// ```
   factory WalletAdapterState.fromJson(final Map<String, dynamic> json) => WalletAdapterState(
     authorizeResult: AuthorizeResult.tryFromJson(json['authorizeResult']),
-    feePayerAccount: Account.tryFromJson(json['feePayerAccount']),
+    connectedAccount: Account.tryFromJson(json['connectedAccount']),
   );
 
   /// Creates an instance of `this` class from the constructor parameters encoded in the provided
@@ -46,8 +46,8 @@ class WalletAdapterState extends Serializable {
 
   @override
   Map<String, dynamic> toJson() => {
-    'authorizeResult': authorizeResult,
-    'feePayerAccount': feePayerAccount,
+    'authorizeResult': authorizeResult,   // jsonEncode calls .toJson()
+    'connectedAccount': connectedAccount, // jsonEncode calls .toJson()
   };
 
   /// Serializes this class into a JSON string.
