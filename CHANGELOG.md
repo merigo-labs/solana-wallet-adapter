@@ -1,3 +1,7 @@
+## 0.0.2+1
+
+* Update docs.
+
 ## 0.0.2
 
 * Change feePayerAccount to connectedAccount.
