@@ -1,8 +1,8 @@
-Dart implementation of Solana's [Mobile Wallet Adapter Specification](https://solana-mobile.github.io/mobile-wallet-adapter/spec/spec.html) protocol. The protocol exposes functionalities of Android and iOS wallet apps like [Phantom](https://phantom.app/) and [Solflare](https://solflare.com/) to dapps.
+Dart implementation of Solana's [Mobile Wallet Adapter Specification](https://solana-mobile.github.io/mobile-wallet-adapter/spec/spec.html) protocol. The protocol exposes functionalities of Android and iOS wallet apps (e.g. [Solflare](https://solflare.com/)) to dapps.
 
 <br>
 
-<img src="https://github.com/merigo-labs/example-apps/blob/master/docs/images/solana_wallet_provider_authorize.gif?raw=true" alt="Authorize App" height="400">
+<img src="https://github.com/merigo-labs/example-apps/blob/master/docs/images/solana_wallet_provider_authorize.gif?raw=true" alt="Authorize App" height="600">
 <br>
 
 *Screenshot of [solana_wallet_provider](https://pub.dev/packages/solana_wallet_provider)*

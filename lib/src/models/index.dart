@@ -8,7 +8,6 @@ export 'deauthorize_params.dart';
 export 'deauthorize_result.dart';
 export 'get_capabilities_params.dart';
 export 'get_capabilities_result.dart';
-export 'app_identity.dart';
 export 'reauthorize_params.dart';
 export 'reauthorize_result.dart';
 export 'sign_and_send_transactions_config.dart';
