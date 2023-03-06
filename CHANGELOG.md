@@ -1,3 +1,15 @@
+## 0.0.4+1
+
+* Remove debugging information.
+
+## 0.0.4
+
+* Convert to Federated plugin.
+
+## 0.0.3
+
+* Prepare for web support.
+
 ## 0.0.2+2
 
 * Remove duplication.

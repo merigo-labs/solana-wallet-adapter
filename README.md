@@ -28,6 +28,12 @@ Privileged methods require the current session to be in an authorized state to i
 
 <br>
 
+## Setup
+
+Connect your wallet application (e.g. `Phantom`) and `SolanaWalletAdapter` to the same network. *The wallet application may not support localhost.*
+
+<br>
+
 ## Example: Authorize
 
 ```dart
@@ -47,6 +53,8 @@ void main() {
 // 1. Create instance of [SolanaWalletAdapter].
 final adapter = SolanaWalletAdapter(
   const AppIdentity(),
+  // NOTE: CONNECT THE WALLET APPLICATION 
+  //       TO THE SAME NETWORK.
   cluster: Cluster.devnet,
 );
 
