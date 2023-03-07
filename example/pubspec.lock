@@ -265,49 +265,49 @@ packages:
     dependency: "direct main"
     description:
       name: solana_common
-      sha256: "5e9bde83fbc401f056c13cbd282774a09f8551999f8e3f4ef7815ce5f27a3bcd"
+      sha256: f62497f28908cf56f5ee1f2b7810f22f091a8b774bc5df28f15f1ce0102ff300
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.4"
+    version: "0.0.4+1"
   solana_wallet_adapter:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.0.4+1"
+    version: "0.0.4+2"
   solana_wallet_adapter_android:
     dependency: transitive
     description:
       name: solana_wallet_adapter_android
-      sha256: d59ac8e2f61f95413359d64c33c373938919a037dfe57c1f33e7cfd7d52aa18d
+      sha256: e09332d9f8774a5d689f3588ae78248f2abc8b4715bc9ca321084b03c7ac2355
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.2+1"
   solana_wallet_adapter_ios:
     dependency: transitive
     description:
       name: solana_wallet_adapter_ios
-      sha256: f1e16ba515b5457d34de03eb597b71d6eeca988e13bb8b8614c234cb9fe647e0
+      sha256: "0592533fb472a33d8ffec45100e6e7a2aa61839429f9b3d331c907c2ae2cd90c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.2+1"
   solana_wallet_adapter_platform_interface:
     dependency: transitive
     description:
       name: solana_wallet_adapter_platform_interface
-      sha256: a5f072041c92c5646d03c538cae0e167377937dd240eb61b15046cc00987914f
+      sha256: "1b3b2b72ed1f981d98c3a8199a6c396b887fd303f79bf15fe7c895f4a0f67d68"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2+1"
+    version: "0.0.2+2"
   solana_wallet_adapter_web:
     dependency: transitive
     description:
       name: solana_wallet_adapter_web
-      sha256: a1b2f048902fca242939314e8991b79faaa7ad2c448b059255b8337e1f5fe456
+      sha256: a3145fc637ab7da3fff33cd91ff2964d8bb8930b852e50706627eb84cef4088b
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   source_span:
     dependency: transitive
     description:

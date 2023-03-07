@@ -1,3 +1,7 @@
+## 0.0.4+2
+
+* Update dependencies.
+
 ## 0.0.4+1
 
 * Remove debugging information.
