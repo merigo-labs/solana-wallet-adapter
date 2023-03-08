@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Add low power mode method.
+
 ## 0.0.4+2
 
 * Update dependencies.
