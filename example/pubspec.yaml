@@ -31,7 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  solana_common: ^0.0.4
+  solana_common: ^0.0.5
+    # path: ../../solana_common
   solana_wallet_adapter:
     path: ../
 
