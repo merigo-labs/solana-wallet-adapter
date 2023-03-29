@@ -10,6 +10,7 @@ import 'package:solana_wallet_adapter_platform_interface/solana_wallet_adapter_p
 /// Exports
 /// ------------------------------------------------------------------------------------------------
 
+export 'package:solana_common/config/cluster.dart';
 export 'package:solana_common/exceptions/json_rpc_exception.dart';
 export 'package:solana_common/utils/convert.dart';
 export 'package:solana_common/utils/types.dart';

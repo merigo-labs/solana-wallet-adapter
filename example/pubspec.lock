@@ -275,7 +275,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.6"
+    version: "0.0.7"
   solana_wallet_adapter_android:
     dependency: transitive
     description:
