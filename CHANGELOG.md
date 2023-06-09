@@ -1,3 +1,7 @@
+## 0.1.0
+
+* Restructure package.
+
 ## 0.0.7
 
 * Export Cluster type.
