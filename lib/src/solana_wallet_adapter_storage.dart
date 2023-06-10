@@ -79,21 +79,25 @@ class SolanaWalletAdapterStorage {
     required final Account? connectedAccount,
     required final bool applyDefaultConnectedAccount,
   }) async {
-    Account? connected;
-    if (applyDefaultConnectedAccount && authorizeResult != null) {
-      if (authorizeResult.accounts.length == 1) {
-        connected = authorizeResult.accounts.first;
-      } else if (authorizeResult.accounts.contains(connectedAccount)) {
-        connected = connectedAccount;
+    if (authorizeResult?.authToken != this.authorizeResult?.authToken) {
+      Account? connected;
+      if (applyDefaultConnectedAccount && authorizeResult != null) {
+        if (authorizeResult.accounts.length == 1) {
+          connected = authorizeResult.accounts.first;
+        } else if (authorizeResult.accounts.contains(connectedAccount)) {
+          connected = connectedAccount;
+        }
       }
+      final SolanaWalletAdapterState value = SolanaWalletAdapterState(
+        authorizeResult: authorizeResult, 
+        connectedAccount: connected,
+      );
+      _notifier.value = value;
+      final SharedPreferences prefs = await _storage;
+      return prefs.setString(_key, value.toJsonString());
+    } else {
+      return true;
     }
-    final SolanaWalletAdapterState value = SolanaWalletAdapterState(
-      authorizeResult: authorizeResult, 
-      connectedAccount: connected,
-    );
-    _notifier.value = value;
-    final SharedPreferences prefs = await _storage;
-    return prefs.setString(_key, value.toJsonString());
   }
 
   /// Sets the [state]'s [SolanaWalletAdapterState.authorizeResult].
