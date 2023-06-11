@@ -116,10 +116,13 @@ class _ExampleAppState extends State<ExampleApp> {
       throw 'Wallet not connected';
     }
 
+    // Amount being transfered.
+    final BigInt lamports = solToLamports(0.001);
+
     // Airdrop some SOL to the wallet account if required.
     setState(() => _status = "Checking balance...");
     final int balance = await connection.getBalance(wallet);
-    if (balance < lamportsPerSol) _airdrop(connection, wallet);
+    if (balance < (1000000 + lamports.toInt())) _airdrop(connection, wallet);
 
     // Create a SystemProgram instruction to transfer some SOL.
     setState(() => _status = "Creating transaction...");
@@ -127,7 +130,6 @@ class _ExampleAppState extends State<ExampleApp> {
     final List<TransferData> txs = [];
     for (int i = 0; i < count; ++i) {
       final Keypair receiver = Keypair.generateSync();
-      final BigInt lamports = solToLamports(0.1);
       final Transaction transaction = Transaction.v0(
         payer: wallet,
         recentBlockhash: latestBlockhash.blockhash,
