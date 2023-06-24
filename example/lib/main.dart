@@ -82,7 +82,7 @@ class _ExampleAppState extends State<ExampleApp> {
   /// Connects the application to a wallet running on the device.
   Future<void> _connect() async {
     if (!adapter.isAuthorized) {
-      await adapter.authorize();
+      await adapter.authorize(walletUriBase: adapter.store.apps[1].walletUriBase);
       setState(() {});
     }
   }
@@ -146,6 +146,44 @@ class _ExampleAppState extends State<ExampleApp> {
         receiver: receiver,
         lamports: lamports,
       ));
+    }
+    return txs;
+  }
+
+  /// Creates [count] number of large transactions.
+  Future<List<Transaction>> _createLargeTransactions(
+    final Connection connection, {
+    required final int count,
+  }) async {
+    
+    setState(() => _status = "Pending...");
+    final Pubkey? wallet = Pubkey.tryFromBase64(adapter.connectedAccount?.address);
+    if (wallet == null) {
+      throw 'Wallet not connected';
+    }
+
+    // Create a SystemProgram instruction to transfer some SOL.
+    setState(() => _status = "Creating large transaction...");
+    final latestBlockhash = await connection.getLatestBlockhash();
+    final List<Transaction> txs = [];
+    for (int i = 0; i < count; ++i) {
+      final Transaction transaction = Transaction.v0(
+        payer: wallet,
+        recentBlockhash: latestBlockhash.blockhash,
+        instructions: [
+          for (int j = 0; j < 2; ++j)
+            MemoProgram.create(
+              "Abstract. A purely peer-to-peer version of electronic cash would allow online"
+              "payments to be sent directly from one party to another without going through a"
+              "financial institution. Digital signatures provide part of the solution, but the main"
+              "benefits are lost if a trusted third party is still required to prevent double-spending."
+              "We propose a solution to the double-spending problem using a peer-to-peer network."
+              "The network timestamps transactions by hashing them into an ongoing chain of"
+              "hash-based proof-of-work, forming a record that cannot be changed without redoing"
+            ),
+        ]
+      );
+      txs.add(transaction);
     }
     return txs;
   }
@@ -217,6 +255,41 @@ class _ExampleAppState extends State<ExampleApp> {
         signatures: signatures.map((e) => base58To64Encode(e!)).toList(), 
         transfers: transfers, 
       );
+
+    } catch (error, stack) {
+      print('$description Error: $error');
+      print('$description Stack: $stack');
+      setState(() => _status = error.toString());
+    }
+  }
+
+
+  void _signLargeTransactions(final int count) async {
+    final String description = "Sign Large Transactions ($count)";
+    try {
+      setState(() => _status = "Create $description...");
+      final Connection connection = Connection(cluster);
+      final List<Transaction> transactions = await _createLargeTransactions(connection, count: count);
+
+      setState(() => _status = "$description...");
+      final SignTransactionsResult result = await adapter.signTransactions(
+        transactions.map((transaction) => adapter.encodeTransaction(transaction)).toList(),
+      );
+
+      setState(() => _status = "Broadcast $description...");
+      final List<String?> signatures = await connection.sendSignedTransactions(
+        result.signedPayloads,
+        eagerError: true,
+      );
+
+      print('SIGN SIGNS ${signatures}');
+
+      // setState(() => _status = "Confirm $description...");
+      // await _confirmTransfers(
+      //   connection, 
+      //   signatures: signatures.map((e) => base58To64Encode(e!)).toList(), 
+      //   transfers: transfers, 
+      // );
 
     } catch (error, stack) {
       print('$description Error: $error');
@@ -357,6 +430,10 @@ class _ExampleAppState extends State<ExampleApp> {
             ElevatedButton(
               onPressed: adapter.isAuthorized ? () => _signTransactions(3) : null, 
               child: const Text('Sign Transactions (3)'),
+            ),
+            ElevatedButton(
+              onPressed: adapter.isAuthorized ? () => _signLargeTransactions(10) : null, 
+              child: const Text('Sign Large Transactions'),
             ),
             ElevatedButton(
               onPressed: adapter.isAuthorized ? () => _signAndSendTransactions(1) : null, 
