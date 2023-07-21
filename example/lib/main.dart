@@ -332,13 +332,13 @@ class _ExampleAppState extends State<ExampleApp> {
       setState(() => _status = "Create $description...");
       final List<String> messages = List.generate(
         count, 
-        (index) => 'Sign message $index'
+        (index) => adapter.encodeMessage('Sign message $index')
       );
 
       setState(() => _status = "$description...");
       final SignMessagesResult result = await adapter.signMessages(
         messages,
-        addresses: [adapter.connectedAccount!.toBase58()],
+        addresses: [adapter.encodeAccount(adapter.connectedAccount!)],
       );
 
       setState(() => _status = "Signed Messages ${result.signedPayloads.join('\n')}");
@@ -359,43 +359,43 @@ class _ExampleAppState extends State<ExampleApp> {
       padding: const EdgeInsets.all(24.0),
       children: [
 
-        ElevatedButton(
-          onPressed: _disconnect, 
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Disconnect'),
-        ),
-        ElevatedButton(
-          onPressed: _connect, 
-          child: const Text('Connect'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signTransactions(1), 
-          child: const Text('Sign Transactions (1)'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signTransactions(3), 
-          child: const Text('Sign Transactions (3)'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signAndSendTransactions(1), 
-          child: const Text('Sign and Send Transactions (1)'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signAndSendTransactions(3), 
-          child: const Text('Sign and Send Transactions (3)'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signMessages(1), 
-          child: const Text('Sign Messages (1)'),
-        ),
-        ElevatedButton(
-          onPressed: () => _signMessages(3), 
-          child: const Text('Sign Messages (3)'),
-        ),
+        // ElevatedButton(
+        //   onPressed: _disconnect, 
+        //   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        //   child: const Text('Disconnect'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: _connect, 
+        //   child: const Text('Connect'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signTransactions(1), 
+        //   child: const Text('Sign Transactions (1)'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signTransactions(3), 
+        //   child: const Text('Sign Transactions (3)'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signAndSendTransactions(1), 
+        //   child: const Text('Sign and Send Transactions (1)'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signAndSendTransactions(3), 
+        //   child: const Text('Sign and Send Transactions (3)'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signMessages(1), 
+        //   child: const Text('Sign Messages (1)'),
+        // ),
+        // ElevatedButton(
+        //   onPressed: () => _signMessages(3), 
+        //   child: const Text('Sign Messages (3)'),
+        // ),
 
-        const SizedBox(
-          height: 48.0,
-        ),
+        // const SizedBox(
+        //   height: 48.0,
+        // ),
 
         // Connect / Disconnect
         adapter.isAuthorized
