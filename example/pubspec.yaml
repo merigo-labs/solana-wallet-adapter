@@ -13,8 +13,8 @@ dependencies:
   # Add packages
   solana_wallet_adapter:
     path: ../
-  solana_web3: ^0.1.2
-    # path: ../../solana_web3
+  solana_web3: #^0.1.2
+    path: ../../solana_web3
 
 dev_dependencies:
   flutter_test:

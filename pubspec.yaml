@@ -18,17 +18,17 @@ dependencies:
   shared_preferences: ^2.1.0
   synchronized: ^3.1.0
 
-  solana_common: ^0.1.0
+  solana_common: ^0.1.0+1
     # path: ../solana_common
   solana_jsonrpc: ^0.0.1
     # path: ../solana_jsonrpc
-  solana_wallet_adapter_android: ^0.0.5
+  solana_wallet_adapter_android: ^0.0.6
     # path: ../solana_wallet_adapter_android
-  solana_wallet_adapter_ios: ^0.0.5
+  solana_wallet_adapter_ios: ^0.0.6
     # path: ../solana_wallet_adapter_ios
-  solana_wallet_adapter_platform_interface: ^0.0.5
+  solana_wallet_adapter_platform_interface: ^0.0.6
     # path: ../solana_wallet_adapter_platform_interface
-  solana_wallet_adapter_web: ^0.0.8
+  solana_wallet_adapter_web: ^0.0.9
     # path: ../solana_wallet_adapter_web
 
 dev_dependencies:
